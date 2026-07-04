@@ -12,8 +12,8 @@ import ChatWidget from './components/ChatWidget';
 import { AlertCircle, ShieldAlert } from 'lucide-react';
 import './index.css';
 
-const API_URL = 'http://localhost:5005/api/incidents';
-const SOCKET_URL = 'http://localhost:5005';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api/incidents';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5005';
 
 function App() {
   const [role, setRole] = useState(null);
@@ -33,7 +33,9 @@ function App() {
   // Initialize Socket once
   useEffect(() => {
     const newSocket = io(SOCKET_URL);
-    setSocket(newSocket);
+    Promise.resolve().then(() => {
+      setSocket(newSocket);
+    });
 
     newSocket.on('new_incident', (incident) => {
       setIncidents((prev) => [incident, ...prev]);
@@ -41,7 +43,7 @@ function App() {
 
     newSocket.on('red_alert', (incident) => {
       const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-      audio.play().catch(e => console.log('Audio autoplay blocked'));
+      audio.play().catch(() => console.log('Audio autoplay blocked'));
       setAlerts((prev) => [incident, ...prev]);
     });
 
@@ -57,14 +59,11 @@ function App() {
 
     newSocket.on('chat_message', (msg) => {
       setMessages((prev) => [...prev, msg]);
-      if (msg.role !== role) {
-         // Optionally play a sound for new message if not from current user
-         const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-         audio.play().catch(e => console.log('Audio autoplay blocked'));
-      }
     });
 
-    return () => newSocket.disconnect();
+    return () => {
+      newSocket.disconnect();
+    };
   }, []);
 
   // Sync Role and Room whenever Role or Socket changes
@@ -90,7 +89,7 @@ function App() {
            setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
          },
          () => {
-           if (!userLocation) setUserLocation({ lat: 26.8467, lng: 80.9462 });
+           setUserLocation((prev) => prev || { lat: 26.8467, lng: 80.9462 });
          },
          { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
        );

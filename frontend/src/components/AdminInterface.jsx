@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Truck, Shield, Flame, X, Waves, Home, Biohazard, Mountain, Search, Terminal, Activity, CheckCircle, AlertCircle, Clock, Users, MapPin, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { Truck, Shield, Flame, X, Waves, Home, Biohazard, Mountain, Search, Terminal, Activity, CheckCircle, AlertCircle, Clock, Users, MapPin } from 'lucide-react';
 import MapComponent from './Map';
 
 export default function AdminInterface({ incidents, activeProviders, userLocation }) {
@@ -23,36 +23,37 @@ export default function AdminInterface({ incidents, activeProviders, userLocatio
   const criticalComplaints = safeIncidents.filter(i => i.severity === 'high' && i.status !== 'resolved').length;
   const solvedToday = safeIncidents.filter(i => i.status === 'resolved').length;
   
-  const MOCK_FLEET = useMemo(() => {
+  // Use state to hold the fleet so it's only generated once when userLocation is first available, or when it updates deterministically
+  const [mockFleet, setMockFleet] = useState([]);
+
+  React.useEffect(() => {
+    if (!userLocation) return;
     const fleet = [];
     const types = ['police', 'gov_ambulance', 'private_ambulance', 'fire_engine', 'ndrf', 'sdrf', 'hazmat_team', 'rescue_squad', 'cid', 'cyber_cell'];
     const countPerType = 5;
-    
-    if (!userLocation) return [];
 
     types.forEach(type => {
       for (let i = 1; i <= countPerType; i++) {
-        const offsetLat = (Math.random() - 0.5) * 0.2;
-        const offsetLng = (Math.random() - 0.5) * 0.2;
+        // Deterministic generation based on index to avoid Math.random purity issues
+        const offsetLat = ((i * 17) % 100 - 50) / 500;
+        const offsetLng = ((i * 23) % 100 - 50) / 500;
         fleet.push({
           id: `${type}-${i}`,
           providerType: type,
           lat: userLocation.lat + offsetLat,
           lng: userLocation.lng + offsetLng,
-          status: Math.random() > 0.4 ? 'online' : 'offline',
+          status: i % 2 === 0 ? 'online' : 'offline',
           name: `${type.replace('_', ' ').toUpperCase()} Unit #${i}`
         });
       }
     });
-    return fleet;
+    setMockFleet(fleet);
   }, [userLocation]);
 
-  const allProviders = [...(activeProviders || []), ...MOCK_FLEET];
+  const allProviders = [...(activeProviders || []), ...mockFleet];
   const providersOfType = selectedSP ? allProviders.filter(p => p.providerType === selectedSP.id) : [];
   
-  const totalUnits = providersOfType.length; 
   const onlineUnits = providersOfType.filter(p => p.status !== 'offline').length;
-  const offlineUnits = totalUnits - onlineUnits;
 
   const defaultCenter = userLocation || { lat: 26.8467, lng: 80.9462 };
 

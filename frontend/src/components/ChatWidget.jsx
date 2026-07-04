@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, X, User } from 'lucide-react';
 
-export default function ChatWidget({ messages, onSend, user }) {
+export default function ChatWidget({ messages, onSend }) {
   const [isOpen, setIsOpen] = useState(false);
   const [text, setText] = useState('');
   const scrollRef = useRef(null);

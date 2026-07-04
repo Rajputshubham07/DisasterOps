@@ -3,7 +3,7 @@ import axios from 'axios';
 import { MapPin, Phone, MessageSquare, Navigation, CheckCircle, Clock, AlertCircle, FileVideo, FileImage, ShieldCheck, CheckCheck, Flame, Droplets, Activity, Wind, Shield, Search, Terminal, AlertTriangle, Hammer, Biohazard, Mountain, Zap, ShieldAlert, Target } from 'lucide-react';
 import MapComponent from './Map';
 
-export default function ProviderInterface({ incidents, userLocation, alerts, providerType, onSendMessage, messages = [] }) {
+export default function ProviderInterface({ incidents, userLocation, alerts, providerType, onSendMessage }) {
   const [selectedId, setSelectedId] = useState(null);
   const [msgText, setMsgText] = useState('');
   const [showMessenger, setShowMessenger] = useState(false);
@@ -59,7 +59,8 @@ export default function ProviderInterface({ incidents, userLocation, alerts, pro
 
   const handleAcceptMission = async (id) => {
      try {
-       await axios.put(`http://localhost:5005/api/incidents/${id}/status`, { status: 'in-progress' });
+       const base = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/incidents\/?$/, '') : 'http://localhost:5005';
+       await axios.put(`${base}/api/incidents/${id}/status`, { status: 'in-progress' });
      } catch (err) {
        console.error('Error accepting mission:', err);
      }
@@ -67,7 +68,8 @@ export default function ProviderInterface({ incidents, userLocation, alerts, pro
 
   const handleResolveMission = async (id) => {
     try {
-      await axios.put(`http://localhost:5005/api/incidents/${id}/status`, { status: 'resolved' });
+      const base = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/incidents\/?$/, '') : 'http://localhost:5005';
+      await axios.put(`${base}/api/incidents/${id}/status`, { status: 'resolved' });
       setSelectedId(null);
     } catch (err) {
       console.error('Error resolving mission:', err);

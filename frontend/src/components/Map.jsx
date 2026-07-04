@@ -84,12 +84,12 @@ function Routing({ from, to }) {
         map.removeControl(routingControlRef.current);
       }
     };
-  }, [map, from.lat, from.lng, to.lat, to.lng]);
+  }, [map, from, to]);
 
   return null;
 }
 
-export default function MapComponent({ incidents, userLocation, alerts, providers = [], onSelectIncident = null, role = null, myIncidents = [], routingTarget = null }) {
+export default function MapComponent({ incidents, userLocation, providers = [], onSelectIncident = null, role = null, myIncidents = [], routingTarget = null }) {
   const isUser = role === 'user';
   // Zoom in closer for citizens so they can clearly see their own pin
   const zoom = isUser ? 17 : 12;
